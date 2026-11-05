@@ -1,0 +1,12 @@
+node_modules/
+dist/
+frontend/dist/
+.vercel/
+data/
+.env
+.env.local
+backend/uploads/tmp/*
+!backend/uploads/tmp/.gitkeep
+*.log
+.DS_Store
+coverage/
