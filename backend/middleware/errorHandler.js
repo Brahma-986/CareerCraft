@@ -30,13 +30,10 @@ export function errorHandler(err, req, res, _next) {
   }
 
   const statusCode = err.statusCode || err.status || 500;
-  const exposeMessage = err.isOperational === true || (statusCode < 500 && err.message);
-  const message = exposeMessage
-    ? err.message
-    : 'Something went wrong. Please try again.';
+  const message = err.message || 'Something went wrong. Please try again.';
 
   if (statusCode >= 500) {
-    console.error(`[${req.method} ${req.originalUrl}]`, err.message);
+    console.error(`[${req.method} ${req.originalUrl}]`, err.stack || err.message);
   }
 
   return res.status(statusCode).json({ success: false, message });

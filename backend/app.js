@@ -36,12 +36,30 @@ app.use((req, _res, next) => {
 });
 
 // Auto-connect database for serverless requests if not yet connected
-app.use(async (_req, _res, next) => {
-  if (mongoose.connection.readyState < 1 && process.env.MONGO_URI) {
+app.use(async (req, res, next) => {
+  // Allow health check to run even if DB is disconnected
+  if (req.path === '/api/health' || req.path === '/api') {
+    if (mongoose.connection.readyState < 1 && process.env.MONGO_URI) {
+      await connectDB().catch(() => {});
+    }
+    return next();
+  }
+
+  if (mongoose.connection.readyState < 1) {
+    if (!process.env.MONGO_URI) {
+      return res.status(500).json({
+        success: false,
+        message: 'MONGO_URI environment variable is not configured in Vercel.',
+      });
+    }
     try {
       await connectDB();
     } catch (err) {
       console.error('[DB Auto-connect Error]:', err?.message);
+      return res.status(500).json({
+        success: false,
+        message: `Database connection failed: ${err?.message || 'Check MongoDB Atlas network access and credentials.'}`,
+      });
     }
   }
   next();
