@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import mongoose from 'mongoose';
+import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import resumeRoutes from './routes/resumeRoutes.js';
 import analysisRoutes from './routes/analysisRoutes.js';
@@ -17,12 +18,46 @@ if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
 
+// Reconstruct rewritten endpoints in serverless environments
+app.use((req, _res, next) => {
+  const urlObj = new URL(req.url, 'http://localhost');
+  const endpointParam = urlObj.searchParams.get('endpoint');
+  if (endpointParam) {
+    urlObj.searchParams.delete('endpoint');
+    const remainingSearch = urlObj.search;
+    req.url = '/api/' + endpointParam.replace(/^\/+/, '') + remainingSearch;
+  } else if (!req.url.startsWith('/api')) {
+    const forwarded = req.headers['x-forwarded-uri'] || req.headers['x-matched-path'];
+    if (forwarded && forwarded.startsWith('/api')) {
+      req.url = forwarded;
+    }
+  }
+  next();
+});
+
+// Auto-connect database for serverless requests if not yet connected
+app.use(async (_req, _res, next) => {
+  if (mongoose.connection.readyState < 1 && process.env.MONGO_URI) {
+    try {
+      await connectDB();
+    } catch (err) {
+      console.error('[DB Auto-connect Error]:', err?.message);
+    }
+  }
+  next();
+});
+
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
   .split(',')
   .map((origin) => origin.trim())
   .filter(Boolean);
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  })
+);
 app.use(
   cors({
     origin(origin, callback) {
