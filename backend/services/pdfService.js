@@ -1,6 +1,16 @@
 import fs from 'node:fs/promises';
-import { PDFParse } from 'pdf-parse';
 import { AppError } from '../utils/AppError.js';
+
+// Polyfill browser globals required by pdfjs-dist in headless serverless environments
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  globalThis.DOMMatrix = class DOMMatrix {};
+}
+if (typeof globalThis.ImageData === 'undefined') {
+  globalThis.ImageData = class ImageData {};
+}
+if (typeof globalThis.Path2D === 'undefined') {
+  globalThis.Path2D = class Path2D {};
+}
 
 const MIN_LETTERS = 80;
 
@@ -30,6 +40,7 @@ export async function extractPdfText(filePath) {
   const buffer = await fs.readFile(filePath);
   assertPdfSignature(buffer);
 
+  const { PDFParse } = await import('pdf-parse');
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();
