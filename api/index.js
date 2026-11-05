@@ -25,6 +25,14 @@ async function ensureConnected() {
 export default async function handler(req, res) {
   try {
     await ensureConnected();
+
+    // Preserve the original requested route when Vercel rewrites to /api
+    const matchedPath = req.headers['x-matched-path'];
+    if (matchedPath && matchedPath.startsWith('/api')) {
+      const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
+      req.url = matchedPath + query;
+    }
+
     return app(req, res);
   } catch (error) {
     console.error('[CareerCraft Serverless Error]:', error);
