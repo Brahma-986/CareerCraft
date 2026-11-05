@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "npx vite build frontend",
+  "buildCommand": "npx vite build frontend --outDir dist --emptyOutDir",
   "outputDirectory": "dist",
   "rewrites": [
     {

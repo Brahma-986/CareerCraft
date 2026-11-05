@@ -6,6 +6,7 @@
   "description": "CareerCraft API – resume analysis and interview assistant",
   "main": "server.js",
   "scripts": {
+    "build": "node -e \"console.log('Backend ready.')\"",
     "dev": "node --watch server.js",
     "start": "node server.js",
     "test": "node --test tests"
