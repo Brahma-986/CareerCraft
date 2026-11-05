@@ -51,7 +51,9 @@ export async function extractPdfText(filePath) {
     };
   } catch (error) {
     if (error instanceof AppError) throw error;
-    throw new AppError('The PDF could not be read. Please upload a text-based PDF resume.', 422);
+    console.error('[PDF Parse Error]:', error);
+    const detail = error?.message ? `: ${error.message}` : '';
+    throw new AppError(`The PDF could not be read${detail}. Please upload a text-based PDF resume.`, 422);
   } finally {
     await parser.destroy().catch(() => {});
   }
