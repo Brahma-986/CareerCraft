@@ -10,10 +10,10 @@
     },
     {
       "source": "/api/(.*)",
-      "destination": "/api"
+      "destination": "/api?endpoint=$1"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]

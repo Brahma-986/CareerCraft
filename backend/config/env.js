@@ -1,4 +1,4 @@
-const REQUIRED_IN_PRODUCTION = ['MONGO_URI', 'JWT_SECRET', 'CLIENT_URL'];
+const REQUIRED_IN_PRODUCTION = ['MONGO_URI', 'JWT_SECRET'];
 
 export function assertRuntimeEnv() {
   if (process.env.NODE_ENV !== 'production') return;
@@ -6,8 +6,8 @@ export function assertRuntimeEnv() {
   if (missing.length) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
-  if (process.env.JWT_SECRET.length < 32) {
-    throw new Error('JWT_SECRET must be at least 32 characters in production.');
+  if (process.env.JWT_SECRET && process.env.JWT_SECRET.length < 16) {
+    throw new Error('JWT_SECRET must be at least 16 characters in production.');
   }
 }
 

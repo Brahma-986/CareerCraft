@@ -26,11 +26,21 @@ export default async function handler(req, res) {
   try {
     await ensureConnected();
 
-    // Preserve the original requested route when Vercel rewrites to /api
-    const matchedPath = req.headers['x-matched-path'];
-    if (matchedPath && matchedPath.startsWith('/api')) {
-      const query = req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : '';
-      req.url = matchedPath + query;
+    // Reconstruct the requested API endpoint if rewritten with query param or headers
+    const urlObj = new URL(req.url, 'http://localhost');
+    const endpointParam = urlObj.searchParams.get('endpoint');
+
+    if (endpointParam) {
+      urlObj.searchParams.delete('endpoint');
+      const remainingSearch = urlObj.search;
+      req.url = '/api/' + endpointParam.replace(/^\/+/, '') + remainingSearch;
+    } else if (!req.url.startsWith('/api')) {
+      const forwarded = req.headers['x-forwarded-uri'] || req.headers['x-matched-path'];
+      if (forwarded && forwarded.startsWith('/api')) {
+        req.url = forwarded;
+      } else {
+        req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
+      }
     }
 
     return app(req, res);
