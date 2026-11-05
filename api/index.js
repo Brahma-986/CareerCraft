@@ -10,6 +10,7 @@ if (typeof globalThis.Path2D === 'undefined') {
 }
 
 import dotenv from 'dotenv';
+import 'pdfjs-dist/legacy/build/pdf.worker.mjs';
 import app from '../backend/app.js';
 
 dotenv.config();

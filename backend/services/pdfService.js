@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import 'pdfjs-dist/legacy/build/pdf.worker.mjs';
 import { AppError } from '../utils/AppError.js';
 
 // Polyfill browser globals required by pdfjs-dist in headless serverless environments
